@@ -1,0 +1,304 @@
+import pygame, random
+from pygame.locals import *
+#Valores ventana
+L=800
+A=600
+#colores
+NEGRO = (0,0,0)
+AZUL=(0,0,225)
+MARRON=(150,70,10)
+color_fondo = (180,55,78)
+
+#mapas
+mapa=[
+"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+"x                x               x               x",
+"x                x               x               x",
+"x                x               x               x",
+"x                x               x               x",
+"x                x               x               x",
+"x                x               x               x",
+"x     xxxxxxx             xxxxxxxx               x",
+"x           x                    x               x",
+"x           x                    x               x",
+"x           x                    x               x",
+"x           x                    x               x",
+"x           x                    x               x",
+"x           x                    x               x",
+"x           xxxxxxxxxxxxx        x       x       x",
+"x           x           x        x       x       x",
+"x           x           x        x       x       x",
+"x           x           x        x       x       x",
+"x           x           x        x       x       x",
+"x           x           x        x       x       x",
+"x           x           x        x       x       x",
+"xxxxxx      xxxxxxxxxxxxx        xxxxxxxxx       x",
+"x                                                x",
+"x                                                x",
+"x                                                x",
+"x                                                x",
+"x                                                x",
+"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+]
+mapa2=[
+"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+"x                x                               x",
+"x                x                               x",
+"x                x                               x",
+"x                x                               x",
+"x                x                               x",
+"x                x                               x",
+"xxxxxxxx         xxxxxxxx        xxxxxxxxx       x",
+"x                                x       x       x",
+"x                                x       x       x",
+"x                                x       x       x",
+"x                                x       x       x",
+"x                                x       x       x",
+"x                                x       x       x",
+"x       xxxxxxxxx       x                x       x",
+"x                       x                x       x",
+"x                       x                x       x",
+"x                       x                x       x",
+"x                       x                x       x",
+"x                       x                x       x",
+"x                       x                x       x",
+"xxxxxxxx         xxxxxxxx        x       xxxxxxxxx",
+"x                x               x               x",
+"x                x               x               x",
+"x                x               x               x",
+"x                x               x               x",
+"x                x               x               x",
+"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+]
+mapa3=[
+"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+"x                                                x",
+"x                                                x",
+"x                                                x",
+"x                                                x",
+"x        xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx         x",
+"x        x                             x         x",
+"x        x                             x         x",
+"x        x                             x         x",
+"x        x                             x         x",
+"x        x         xxxxxxxxxxx         x         x",
+"x                            x                   x",
+"x                            x                   x",
+"x                            x                   x",
+"x                  x                             x",
+"x        x         x                   x         x",
+"x        x         x                   x         x",
+"x        x         xxxxxxxxxxx         x         x",
+"x        x                             x         x",
+"x        x                             x         x",
+"x        x                             x         x",
+"x        x                             x         x",
+"x        xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx         x",
+"x                                                x",
+"x                                                x",
+"x                                                x",
+"x                                                x",
+"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+]
+
+#funciones
+def dibujar_muro(superficie,rectangulo):
+    pygame.draw.rect(superficie,MARRON,rectangulo)
+def dibujar_personaje(superficie,rectangulo):
+    pygame.draw.rect(superficie,AZUL,rectangulo)
+def construir_mapa(mapa):
+    muros = []
+    x = 0
+    y = 0
+    for fila in mapa:#los mapas son listas, se recorren elemento por elemento (fila por fila).
+        for muro in fila:#recorre todos los elementos de una fila
+            if muro == "x":
+                muros.append(pygame.Rect(x,y,25,20))#Guarda coordenadas y tamaño.
+            x += 15.5#El equivalente a avanzar un "espacio" horizontalmente.
+        x = 0
+        y += 20#El equivalente a avanzar un "espacio" verticalmente.
+    return muros
+
+def dibujar_mapa(superficie,muros):
+    for muro in muros:#muro es un índice cualquiera.
+        dibujar_muro(superficie,muro)#Se dibujan los rect para el laberinto.
+def mostrar_bala(x,y,tipo):
+    ventana.blit(tipo,(x,y))
+
+#Valores personaje
+orientación="derecha"
+personaje_imagen = pygame.image.load("mama_derecha.png")
+personaje_rectangulo = personaje_imagen.get_rect()
+personaje_rectangulo.x=30
+personaje_rectangulo.y=30
+personaje_vel_x = 0
+personaje_vel_y = 0
+personaje_tamaño= (personaje_imagen.get_size()[0],personaje_imagen.get_size()[1])
+
+
+#Valores balas
+'''
+El sistema de disparo consiste en que la bala se encuentra compartiendo la posición del personaje en todo momento, oculta por
+el sprite, este es el estado "Espera". En cuanto se dispara, se libera de las coordenadas del jugador y asume unas propias. 
+(x_temp y y_temp). Este es el estado "Fuego" Cuando rebota un número determinado de veces, desaparece y vuelve a "Espera".
+'''
+bala=pygame.image.load("bala_2.png")
+bala_derecha=pygame.image.load("bala2_derecha.png")
+bala_izquierda=pygame.image.load("bala2_izquierda.png")
+bala_abajo=pygame.image.load("bala2_abajo.png")#Hasta aquí las imágenes en las 4 direcciones.
+bala_size=(bala.get_size()[0],bala.get_size()[1])
+x_temp=0#Estas variables se convertirán en las coordenadas de la bala al dispararse.
+y_temp=0
+bala_status="Espera"#La bala se encuentra sin disparar y lista
+velocidad=10 # velocidad inicial de la bala.(horizontal)
+velocidad2=0#velocidad inicial vertical. Es 0 para que el primer tiro sea recto.
+contador_rebotes=0#Cuenta el número de rebotes antes de desaparecer.
+
+
+pygame.init() #INICIO PYGAME
+
+ventana = pygame.display.set_mode((L,A))
+reloj = pygame.time.Clock()
+
+muros = construir_mapa(mapa3)#elección mapa
+
+correr = True
+
+#Bucle principal
+while correr:
+    
+    reloj.tick(120)#Control de fps.
+    for evento in pygame.event.get():
+        if evento.type == pygame.QUIT:
+            correr = False
+        if evento.type == pygame.KEYDOWN:
+            if evento.key == pygame.K_ESCAPE:
+                correr = False
+
+        #disparar bala
+        if evento.type==pygame.KEYDOWN:
+            if evento.key==pygame.K_SPACE:
+    
+                if bala_status=="Espera":
+                    
+                    x_temp=personaje_rectangulo.x+(personaje_tamaño[0]//4)
+                    y_temp=personaje_rectangulo.y+10 #Se crean copias de la posición del jugador una unica vez, para que la bala no se mueva con la nave al ser disparada.
+                    
+                    bala_status="Fuego"
+                    orientación2=orientación #"orientación 2" solo funcionará cuando la bala recién ha sido disparada
+                    #Si se trabaja con "orientación" en la dirección de la bala, esta se moverá con la nave cada vez que apretemos espacio.
+            
+            #Movimiento personaje.
+            if evento.key == pygame.K_d:
+                orientación="derecha"
+                personaje_vel_x = 5
+            if evento.key == pygame.K_a:
+                orientación="izquierda"
+                personaje_vel_x = -5
+            if evento.key == pygame.K_s:
+                orientación="abajo"
+                personaje_vel_y = 5
+            if evento.key == pygame.K_w:
+                orientación="arriba"
+                personaje_vel_y = -5
+
+        if evento.type == pygame.KEYUP:
+            if evento.key == pygame.K_d:
+                personaje_vel_x = 0
+            if evento.key == pygame.K_a:
+                personaje_vel_x = 0
+            if evento.key == pygame.K_s:
+                personaje_vel_y = 0
+            if evento.key == pygame.K_w:
+                personaje_vel_y = 0    
+    
+    personaje_rectangulo.x += personaje_vel_x
+    personaje_rectangulo.y += personaje_vel_y
+    
+    #Movimiento en los límites de la ventana
+    
+    if personaje_rectangulo.x > L - personaje_rectangulo.width:
+        personaje_rectangulo.x = L - personaje_rectangulo.width
+    if personaje_rectangulo.x < 0:
+        personaje_rectangulo.x = 0
+    if personaje_rectangulo.y > A - personaje_rectangulo.height:
+        personaje_rectangulo.y = A - personaje_rectangulo.height
+    if personaje_rectangulo.y < 0:
+        personaje_rectangulo.y = 0
+
+    #Orientación del personaje.
+    if orientación == "arriba":
+        personaje_imagen = pygame.image.load("mama_arriba.png")
+    elif orientación == "abajo":
+        personaje_imagen = pygame.image.load("mama_abajo.png")
+    elif orientación == "derecha":
+        personaje_imagen = pygame.image.load("mama_derecha.png")
+    elif orientación == "izquierda":
+        personaje_imagen = pygame.image.load("mama_izquierda.png")
+
+    #Colisión con los muros.
+    for muro in muros:
+        if personaje_rectangulo.colliderect(muro):
+            personaje_rectangulo.x -= personaje_vel_x
+            personaje_rectangulo.y -= personaje_vel_y
+    ventana.fill(color_fondo)
+
+    #Trayectoria disparo
+    if bala_status=="Fuego":
+       #dependiendo de status el disparo se efectúa con diferentes png de balas (direcciones)
+        if orientación2 == "arriba": #movimiento y sprites dependiendo de la orientación al disparar.(velocidad 2 es 0 al inicio)
+            mostrar_bala(x_temp,y_temp,bala)
+            y_temp-=velocidad
+            x_temp-=velocidad2
+        elif orientación2 == "abajo":
+            mostrar_bala(x_temp,y_temp,bala_abajo)
+            y_temp+=velocidad
+            x_temp+=velocidad2
+        elif orientación2 == "izquierda":
+            mostrar_bala(x_temp,y_temp,bala_izquierda)
+            x_temp-=velocidad
+            y_temp-=velocidad2
+        elif orientación2 == "derecha":
+            mostrar_bala(x_temp,y_temp,bala_derecha)
+            x_temp+=velocidad
+            y_temp+=velocidad2
+        
+        if (y_temp<=0 or y_temp>= A or x_temp<=0 or x_temp>= L) or contador_rebotes==10:#Cuando se llega a un borde o se rebota 10 veces.
+            contador_rebotes=0 # se reinician los rebotes.
+            bala_status="Espera"
+
+    if bala_status== "Espera":
+        velocidad=5# Es importante reiniciar estos valores cada vez.
+        velocidad2=0
+        mostrar_bala(personaje_rectangulo.x+(personaje_tamaño[0]//4),personaje_rectangulo.y+5,bala)#En espera la bala se queda oculta en la nave.
+
+    #Rebote de las balas
+    bala_dimensiones=bala.get_rect(center=(x_temp,y_temp))#Se hallan las coordenadas que va adquiriendo la bala al moverse.
+    switch=True #variable usada para el rebote.
+    for muro in muros:
+        if bala_dimensiones.colliderect(muro) and bala_status=="Fuego" and switch==True:
+            contador_rebotes+=1
+            if contador_rebotes==1:# estos if se usan para que los rebotes sean más dinámicos, invirtiendo las velocidades cada 2 rebotes.
+                velocidad*=-1
+                velocidad2= velocidad#Velocidad 2 deja de ser 0.
+            elif contador_rebotes%2==0:
+                velocidad=velocidad
+                velocidad2*=-1
+            elif contador_rebotes%2==1:
+                velocidad*=-1
+                velocidad2=velocidad2
+            switch=False 
+            '''
+            Honestamente, el uso del switch me salió de suerte. Sin este la bala se perdía o rebotaba en el mismo punto 
+            al tocar una pared. No lo muevan porque ni yo sé cómo funciona.
+            '''
+            
+            
+
+    #dibujar mapa
+    dibujar_mapa(ventana,muros)
+
+    #dibujar personaje
+    ventana.blit(personaje_imagen,personaje_rectangulo)#Se está colocando el png encima del rectángulo.
+
+    pygame.display.update()

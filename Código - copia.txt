@@ -1,0 +1,90 @@
+datos=[["YvAn TUpac", 	"Control 1:10","Control 4:12"],
+["Graciela Meza", 	"Control 2:11","Control 3:2"],
+["Rensso Mora", 	"Control 3:9","Control 4:12", "Control 1:10", "Control 2:12"],
+["JosE Ochoa", 	"Conl 1:10","Cotrol 4:12"],
+["Gustavo delgado", 	"ContrOL 1:10","Cntrol 4:12", "Cntrol 2:12"],
+["Juan Guti", 	"Ctrol 1:10","Control 4:12", "Cntrol 2:1","Cntrol 3:18"],
+["ManueL Loaiza", 	"Contro 1:10","Cntrol 4:12", "Cntrol 3:12"],
+["EdwarD CAYlla", 	"Contrl 1:10", "Cntrol 3:12","COTtrol 4:12"],
+["Yessenia YARI", 	"COntrol 1:10","Corol 3:11"],
+["ALEX CUADROS", 	"Control 1:10","Control 2:2"]]
+
+
+nombres = ["Alex Cuadros", "Edward Caylla","Graciela Meza","Gustavo Delgado","Jose Ochoa","Juan Guti","Manuel Loaiza","Rensso Mora","Yessenia Yari","Yvan Tupac"]
+print("Tabla datos")
+
+for i in range(0,len(datos)):
+    for j in range(0,len(datos[i])):
+        print(datos[i][j], end="" "\t")
+    print()
+print()
+print("Tabla Nombres")
+for i in range(0,len(nombres)):
+    print(nombres[i],"\t")
+
+print()
+print()
+print()
+arrayOrdenado = []
+lista1 = ["Nombres Alumnos", "C1", "C2", "C3", "C4", "Promedio"]
+print(lista1)
+#pasar a otro array
+for z in range(len(datos)):
+    arrayOrdenado.append(datos[z][0])
+
+for i in range(len(datos)):
+
+    for j in range(i, len(datos)):
+
+        if arrayOrdenado[i] > arrayOrdenado[j]:
+            indiceValorMenor = j
+    arrayOrdenado[i] = [nombres[i]]
+
+
+
+print()
+for orden in arrayOrdenado:
+    print(orden)
+print()
+print()
+print()
+print()
+Matriz_ordenada=[]
+Matriz_ordenada.append(["Nombre alumno","C1","C2","C3","C4","Promedio"])
+
+print()
+for i in range(len(datos)):
+    Matriz_ordenada.append([])
+    for j in range(len(datos)):
+        Matriz_ordenada[i+1].append(datos[i][0])
+        if Matriz_ordenada[i] > Matriz_ordenada[j]:
+            indiceValorMenor = j
+        Matriz_ordenada[i+1] = [nombres[i]]
+        Matriz_ordenada[i+1].append(datos[indiceValorMenor][1])
+        Matriz_ordenada[i+1].append(datos[indiceValorMenor][2])
+
+
+
+        for z in range(len(datos[i][1])):
+            for x in range(len(datos[z][1])):
+                if str(datos[i][j][0])==":" or str(datos[i][j])==":":
+                    for x in range(len(datos[i][j])):
+                        if datos[i][j][x] not in Matriz_ordenada:
+                            Matriz_ordenada[x].append(datos[z])
+                        else:
+                            Matriz_ordenada[x].append("0")
+                break
+            break
+        break
+
+print(Matriz_ordenada)
+print()
+print()
+
+
+
+for i in range(0,len(Matriz_ordenada)):
+    for j in range(0,len(Matriz_ordenada[i])):
+        print(Matriz_ordenada[i][j], end="" "\t")
+    print()
+print()

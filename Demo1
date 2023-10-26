@@ -1,0 +1,567 @@
+import pygame
+import copy
+
+#Inicializar
+pygame.init()
+
+#Medidas ventana
+L=1280
+A=720
+
+
+
+#Mapas
+mapa1=[
+"azzzzzzzzxzzzzzzzxzzzzzza",
+"z        z       z      z",
+"z        z       z      z",
+"z        z       z      z",
+"z  zzzx      xzzza      z",
+"z     z      z          z",
+"z     z      z          z",
+"z     zzzza  z    z     z",
+"z     z   z  z    z     z",
+"xzz   azzzx  xzzzzx     z",
+"z                       z",
+"z                       z",
+"z                      pz",
+"azzzzzzzzzzzzzzzzzzzzzzza",
+]
+mapa2=[
+"lcccccccccccccccccccccccb",
+"c        c              c",
+"c        c              c",
+"c        c              c",
+"bcccc    bccc   lcccb   c",
+"c               c   c   c",
+"c               c   c   c",
+"c   ccccl       c   c   c",
+"c       c           c   c",
+"c       c           c   c",
+"bccc    ccc  c      bcccl",
+"c       c    c          c",
+"c       c p  c          c",
+"bcccccccccccccccccccccccl",
+]
+mapa3=[
+"c p l p l p l p l p l o  ",
+"b eee  m          m eeeeb",
+"  eee               eeee ",
+"t eee  c l p lo      eeet",
+"  eee  n        n    nee ",
+"b      n   aoa  n       b",
+"         w    n    iee   ",
+"t      t      n    eee  t",
+" ee    w  nna d t  eee   ",
+"bee                     b",
+"teeee   p l p l     eeeet",
+"weeee        m      eede ",
+" eeee               eeee ",
+"ap l p l p l p l p l p   ",
+]
+
+#Tipos de letra
+tipo_letra_go = pygame.font.Font('freesansbold.ttf', 46)
+tipo_letra = pygame.font.Font('freesansbold.ttf', 28)
+letra_p_i_L = 10
+letra_p_i_A = 10
+
+#Funciones
+
+def construir_mapa(superficie,mapa):
+    puertas =[]
+    x = 0
+    y = 0
+    if mapa == mapa1:
+        limites = []
+        arbusto = []
+        arbol = []
+        for linea in mapa:
+            for baldosa in linea:
+                if baldosa == "x":
+                    limites.append([baldosa_muro , pygame.Rect(x,y,50,50)])
+                elif baldosa == "z":
+                    arbusto.append([baldosa_arbusto , pygame.Rect(x,y,50,50)])
+                elif baldosa == "a":
+                    arbol.append([baldosa_arbol , pygame.Rect(x,y,50,50)])
+                elif baldosa == "p":
+                    puertas.append([baldosa_puerta , pygame.Rect(x,y,50,50)])
+                x += 50
+            x = 0
+            y += 50
+        return limites,arbusto,arbol,puertas
+    if mapa == mapa2:
+        cajas = []
+        paleta = []
+        barril = []
+        for linea in mapa:
+            for baldosa in linea:
+                if baldosa == "c":
+                    cajas.append([baldosa_cajas , pygame.Rect(x,y,50,50)])
+                elif baldosa == "l":
+                    paleta.append([baldosa_paleta , pygame.Rect(x,y,50,50)])
+                elif baldosa == "b":
+                    barril.append([baldosa_barril , pygame.Rect(x,y,50,50)])
+                elif baldosa == "p":
+                    puertas.append([baldosa_puerta , pygame.Rect(x,y,50,50)])
+                x += 50
+            x = 0
+            y += 50
+        return cajas,paleta,barril,puertas
+    if mapa == mapa3:
+        arbol_auxiliar = []
+        piedras = []
+        piedras_izquierda = []
+        piedras_arriba = []
+        piedras_abajo = []
+        piedras_sueltas = []
+        costado1 = []
+        costado2 = []
+        costado3 = []
+        costado4 = []
+        circulo = []
+        armas = []
+        transparente = []
+        transparente2 = []
+        for linea in mapa:
+            for baldosa in linea:
+                if baldosa == "a":
+                    arbol_auxiliar.append([baldosa_arbol_auxiliar , pygame.Rect(x,y,50,50)])
+                elif baldosa == "p":
+                    piedras.append([baldosa_piedras , pygame.Rect(x,y,130,40)])
+                elif baldosa == "l":
+                    piedras_izquierda.append([baldosa_piedras_izquierda , pygame.Rect(x,y,130,40)])
+                elif baldosa == "t":
+                    piedras_arriba.append([baldosa_piedras_arriba , pygame.Rect(x,y,40,130)])
+                elif baldosa == "b":
+                    piedras_abajo.append([baldosa_piedras_abajo , pygame.Rect(x,y,40,130)])
+                if baldosa == "s":
+                    piedras_sueltas.append([baldosa_piedras_sueltas , pygame.Rect(x,y,50,50)])
+                if baldosa == "c":
+                    costado1.append([baldosa_costados , pygame.Rect(x,y,130,40)])
+                if baldosa == "o":
+                    costado2.append([baldosa_costados2 , pygame.Rect(x,y,140,40)])
+                if baldosa == "w":
+                    costado3.append([baldosa_costados3 , pygame.Rect(x,y,40,140)])
+                if baldosa == "d":
+                    costado4.append([baldosa_costados4 , pygame.Rect(x,y,50,50)])
+                if baldosa == "i":
+                    circulo.append([baldosa_circulo , pygame.Rect(x,y,50,50)])
+                if baldosa == "m":
+                    armas.append([baldosa_armas , pygame.Rect(x,y,50,50)])
+                if baldosa == "n":
+                    transparente.append([baldosa_transparente , pygame.Rect(x,y,30,35)])
+                if baldosa == "e":
+                    transparente2.append([baldosa_transparente , pygame.Rect(x,y,50,50)])
+                x += 50
+            x = 0
+            y += 50
+
+        return arbol_auxiliar,piedras,piedras_izquierda,piedras_abajo,piedras_arriba,piedras_sueltas,circulo,armas,costado1,costado2,costado3,costado4,transparente,transparente2
+def mostrar_bala(x,y,tipo):
+    ventana.blit(tipo,(x,y))
+puntaje=0
+def mostrar_puntaje(x,y):
+    puntaje_render = tipo_letra.render("Score: "+str(puntaje), True, (255,255,255))
+    ventana.blit(puntaje_render,(x,y))
+#Funcion game over y subir nivel para que aparezcan abajito
+def mostrar_fin():
+    fin_render = tipo_letra_go.render("GAME OVER", True, (255,255,255))
+    x=10
+    y=A-(fin_render.get_size()[1])
+    ventana.blit(fin_render,(x,y))
+
+nivel=1
+def mostrar_nivel():
+    nivel_render = tipo_letra.render("Nivel: "+str(nivel), True, (255,255,255))
+    x=0
+    y=A-(nivel_render.get_size()[1])
+    ventana.blit(nivel_render,(x,y))
+#ventana
+
+ventana = pygame.display.set_mode((L,A))
+reloj = pygame.time.Clock()
+
+fondo_juego = pygame.image.load("F:\CS111Practica\Pygames\Casi final\Texturas/fondo1.jpg").convert()
+fondo_juego2 = pygame.image.load("F:\CS111Practica\Pygames\Casi final\Texturas/fondo5.jpg").convert()
+fondo_juego3 = pygame.image.load("F:\CS111Practica\Pygames\Casi final\Texturas/fondo10.jpg").convert()
+
+baldosa_muro = pygame.image.load("F:\CS111Practica\Pygames\Casi final\Texturas/arbusto_imagen.png").convert_alpha()
+baldosa_arbusto = pygame.image.load("F:\CS111Practica\Pygames\Casi final\Texturas/arbusto_alto_imagen.png").convert_alpha()
+baldosa_arbol = pygame.image.load("F:\CS111Practica\Pygames\Casi final\Texturas/transparente.png").convert_alpha()
+baldosa_puerta = pygame.image.load("F:\CS111Practica\Pygames\Casi final\Texturas/portal.png").convert_alpha()
+
+baldosa_cajas = pygame.image.load("F:\CS111Practica\Pygames\Casi final\Texturas/caja.png").convert_alpha()
+baldosa_paleta = pygame.image.load("F:\CS111Practica\Pygames\Casi final\Texturas/paleta.png").convert_alpha()
+baldosa_barril = pygame.image.load("F:\CS111Practica\Pygames\Casi final\Texturas/barril.png").convert_alpha()
+
+baldosa_arbol_auxiliar = pygame.image.load("F:\CS111Practica\Pygames\Casi final\Texturas/arbol_mapa3.png").convert_alpha()
+baldosa_piedras = pygame.image.load("F:\CS111Practica\Pygames\Casi final\Texturas/piedras.png").convert_alpha()
+baldosa_piedras_izquierda = pygame.image.load("F:\CS111Practica\Pygames\Casi final\Texturas/piedras_izquierda.png").convert_alpha()
+baldosa_piedras_arriba = pygame.image.load("F:\CS111Practica\Pygames\Casi final\Texturas/piedras_arriba.png").convert_alpha()
+baldosa_piedras_abajo = pygame.image.load("F:\CS111Practica\Pygames\Casi final\Texturas/piedras_abajo.png").convert_alpha()
+baldosa_piedras_sueltas = pygame.image.load("F:\CS111Practica\Pygames\Casi final\Texturas/piedras_sueltas.png").convert_alpha()
+baldosa_costados = pygame.image.load("F:\CS111Practica\Pygames\Casi final\Texturas/costados.png").convert_alpha()
+baldosa_costados2 = pygame.image.load("F:\CS111Practica\Pygames\Casi final\Texturas/costados2.png").convert_alpha()
+baldosa_costados3 = pygame.image.load("F:\CS111Practica\Pygames\Casi final\Texturas/costados3.png").convert_alpha()
+baldosa_costados4 = pygame.image.load("F:\CS111Practica\Pygames\Casi final\Texturas/costados4.png").convert_alpha()
+baldosa_circulo = pygame.image.load("F:\CS111Practica\Pygames\Casi final\Texturas/circulo.png").convert_alpha()
+baldosa_armas = pygame.image.load("F:\CS111Practica\Pygames\Casi final\Texturas/armas.png").convert_alpha()
+baldosa_transparente = pygame.image.load("F:\CS111Practica\Pygames\Casi final\Texturas/arbol2_imagen.png").convert_alpha()
+casa1 = pygame.image.load("F:\CS111Practica\Pygames\Casi final\Texturas/casa1.png").convert_alpha()
+casa2 = pygame.image.load("F:\CS111Practica\Pygames\Casi final\Texturas/casa2.png").convert_alpha()
+casa3 = pygame.image.load("F:\CS111Practica\Pygames\Casi final\Texturas/casa3.png").convert_alpha()
+casa4 = pygame.image.load("F:\CS111Practica\Pygames\Casi final\Texturas/casa4.png").convert_alpha()
+
+
+personaje_imagen = pygame.image.load("F:\CS111Practica\Pygames\Casi final\Sprites/mama_derecha.png")
+
+#Valores personaje
+orientación="derecha"
+personaje_rectangulo = personaje_imagen.get_rect()
+personaje_rectangulo.x=50
+personaje_rectangulo.y=50
+personaje_vel_x = 0
+personaje_vel_y = 0
+personaje_tamaño= (personaje_imagen.get_size()[0],personaje_imagen.get_size()[1])
+
+#Villano
+
+villano_arriba = pygame.image.load("F:\CS111Practica\Pygames\Casi final\Sprites/villano.png")
+villano_abajo = pygame.image.load("F:\CS111Practica\Pygames\Casi final\Sprites/villano_abajo.png")
+villano_derecha = pygame.image.load("F:\CS111Practica\Pygames\Casi final\Sprites/villano_derecha.png")
+villano_izquierda = pygame.image.load("F:\CS111Practica\Pygames\Casi final\Sprites/villano_izquierda.png")
+villano_imagen = villano_arriba
+villano_bala=pygame.image.load("F:\CS111Practica\Pygames\Casi final\Sprites/bala_enemiga.png")
+
+
+
+villano_rectangulo = villano_imagen.get_rect()
+villano_rectangulo2 = villano_imagen.get_rect()
+
+class villano:
+    def __init__(self,img,rec,x,y,vx,vy,b,bx,by):
+        bx=x
+        by=y
+        self.imagen=img
+        self.recta=rec
+        self.recta.x=x
+        self.recta.y=y
+        self.vel_x=vx
+        self.vel_y=vy
+        self.bala=b
+        self.bala_rect=self.bala.get_rect()
+        self.bala_rect.x=bx
+        self.bala_rect.y=by
+        self.estado="Espera"
+        
+
+villano01=villano(villano_imagen,villano_rectangulo,400,300,0,0,villano_bala,0,0)
+
+villano02=villano(villano_imagen,villano_rectangulo2,700,400,0,0,villano_bala,0,0)
+
+
+
+
+
+
+
+
+#Valores balas
+'''
+El sistema de disparo consiste en que la bala se encuentra compartiendo la posición del personaje en todo momento, oculta por
+el sprite, este es el estado "Espera". En cuanto se dispara, se libera de las coordenadas del jugador y asume unas propias. 
+(x_temp y y_temp). Este es el estado "Fuego" Cuando rebota un número determinado de veces, desaparece y vuelve a "Espera".
+'''
+bala=pygame.image.load("F:\CS111Practica\Pygames\Casi final\Sprites/bala_2.png")
+bala_derecha=pygame.image.load("F:\CS111Practica\Pygames\Casi final\Sprites/bala2_derecha.png")
+bala_izquierda=pygame.image.load("F:\CS111Practica\Pygames\Casi final\Sprites/bala2_izquierda.png")
+bala_abajo=pygame.image.load("F:\CS111Practica\Pygames\Casi final\Sprites/bala2_abajo.png")#Hasta aquí las imágenes en las 4 direcciones.
+bala_size=(bala.get_size()[0],bala.get_size()[1])
+x_temp=0#Estas variables se convertirán en las coordenadas de la bala al dispararse.
+y_temp=0
+bala_status="Espera"#La bala se encuentra sin disparar y lista
+velocidad=10 # velocidad inicial de la bala.(horizontal)
+velocidad2=0#velocidad inicial vertical. Es 0 para que el primer tiro sea recto.
+contador_rebotes=0#Cuenta el número de rebotes antes de desaparecer.
+#Datos
+
+habitacion1 = construir_mapa(ventana,mapa1)
+habitacion2 = construir_mapa(ventana,mapa2)
+habitacion3 = construir_mapa(ventana,mapa3)
+
+habitacion = habitacion1
+
+#Bucle principal
+
+correr = True
+
+while correr:
+    reloj.tick(120)
+
+    #Eventos
+    for evento in pygame.event.get():
+        if evento.type == pygame.QUIT:
+            correr = False
+        if evento.type == pygame.KEYDOWN:
+            if evento.key == pygame.K_ESCAPE:
+                correr = False
+
+        #disparar bala
+        if evento.type==pygame.KEYDOWN:
+            if evento.key==pygame.K_SPACE:
+    
+                if bala_status=="Espera":
+                    
+                    x_temp=personaje_rectangulo.x+(personaje_tamaño[0]//4)
+                    y_temp=personaje_rectangulo.y+10 #Se crean copias de la posición del jugador una unica vez, para que la bala no se mueva con la nave al ser disparada.
+                    
+                    bala_status="Fuego"
+                    orientación2=orientación #"orientación 2" solo funcionará cuando la bala recién ha sido disparada
+                    #Si se trabaja con "orientación" en la dirección de la bala, esta se moverá con la nave cada vez que apretemos espacio.
+            
+            #Movimiento personaje.
+            if evento.key == pygame.K_d or evento.key == pygame.K_RIGHT:
+                orientación="derecha"
+                personaje_vel_x = 5
+            if evento.key == pygame.K_a or evento.key == pygame.K_LEFT:
+                orientación="izquierda"
+                personaje_vel_x = -5
+            if evento.key == pygame.K_s or evento.key == pygame.K_DOWN:
+                orientación="abajo"
+                personaje_vel_y = 5
+            if evento.key == pygame.K_w or evento.key == pygame.K_UP:
+                orientación="arriba"
+                personaje_vel_y = -5
+
+        if evento.type == pygame.KEYUP:
+            if evento.key == pygame.K_d or evento.key == pygame.K_RIGHT:
+                personaje_vel_x = 0
+            if evento.key == pygame.K_a or evento.key == pygame.K_LEFT:
+                personaje_vel_x = 0
+            if evento.key == pygame.K_s or evento.key == pygame.K_DOWN:
+                personaje_vel_y = 0
+            if evento.key == pygame.K_w or evento.key == pygame.K_UP:
+                personaje_vel_y = 0   
+    
+    #Lógica
+    personaje_rectangulo.x += personaje_vel_x
+    personaje_rectangulo.y += personaje_vel_y
+
+    #Movimiento en los límites de la ventana
+    if personaje_rectangulo.x > L - personaje_rectangulo.width:
+        personaje_rectangulo.x = L - personaje_rectangulo.width
+    if personaje_rectangulo.x < 0:
+        personaje_rectangulo.x = 0
+    if personaje_rectangulo.y > A - personaje_rectangulo.height:
+        personaje_rectangulo.y = A - personaje_rectangulo.height
+    if personaje_rectangulo.y < 0:
+        personaje_rectangulo.y = 0
+
+    #Orientación del personaje.
+    if orientación == "arriba":
+        personaje_imagen = pygame.image.load("F:\CS111Practica\Pygames\Casi final\Sprites/mama_arriba.png")
+    elif orientación == "abajo":
+        personaje_imagen = pygame.image.load("F:\CS111Practica\Pygames\Casi final\Sprites/mama_abajo.png")
+    elif orientación == "derecha":
+        personaje_imagen = pygame.image.load("F:\CS111Practica\Pygames\Casi final\Sprites/mama_derecha.png")
+    elif orientación == "izquierda":
+        personaje_imagen = pygame.image.load("F:\CS111Practica\Pygames\Casi final\Sprites/mama_izquierda.png")
+
+    
+    #Dibujos
+    if habitacion == habitacion1:
+        fondo = ventana.blit(fondo_juego,(0,0))
+        for i in range(0,3):
+            for limite in habitacion[i]: 
+                if personaje_rectangulo.colliderect(limite[1]):
+                    personaje_rectangulo.x -= personaje_vel_x
+                    personaje_rectangulo.y -= personaje_vel_y
+        for puerta in habitacion[3]:
+            if personaje_rectangulo.colliderect(puerta[1]):
+                if habitacion == habitacion1:
+                    habitacion = habitacion2
+                    personaje_rectangulo.x = 50
+                    personaje_rectangulo.y = 50
+                elif habitacion == habitacion2:
+                    habitacion = habitacion3
+                    personaje_rectangulo.x = 50
+                    personaje_rectangulo.y = 50
+
+    elif habitacion == habitacion2:
+        fondo = ventana.blit(fondo_juego2,(0,0))
+        for i in range(0,3):
+            for limite in habitacion[i]:
+                if personaje_rectangulo.colliderect(limite[1]):
+                    personaje_rectangulo.x -= personaje_vel_x
+                    personaje_rectangulo.y -= personaje_vel_y
+        for puerta in habitacion[3]:
+            if personaje_rectangulo.colliderect(puerta[1]):
+                if habitacion == habitacion1:
+                    habitacion = habitacion2
+                    personaje_rectangulo.x = 50
+                    personaje_rectangulo.y = 50
+                elif habitacion == habitacion2:
+                    habitacion = habitacion3
+                    personaje_rectangulo.x = 50
+                    personaje_rectangulo.y = 50
+    elif habitacion == habitacion3:
+        fondo = ventana.blit(fondo_juego3,(0,0))
+        ventana.blit(casa1,(100,30))
+        ventana.blit(casa2,(50,420))
+        ventana.blit(casa3,(1000,50))
+        ventana.blit(casa4,(1000,500))
+        for i in range(0,14):
+            for limite in habitacion[i]:
+                if personaje_rectangulo.colliderect(limite[1]):
+                    personaje_rectangulo.x -= personaje_vel_x
+                    personaje_rectangulo.y -= personaje_vel_y
+        
+    for elemento in habitacion:
+        for baldosa in elemento:
+            ventana.blit(baldosa[0],baldosa[1])
+    #Trayectoria disparo
+    if bala_status=="Fuego":
+       #dependiendo de status el disparo se efectúa con diferentes png de balas (direcciones)
+        if orientación2 == "arriba": #movimiento y sprites dependiendo de la orientación al disparar.(velocidad 2 es 0 al inicio)
+            mostrar_bala(x_temp,y_temp,bala)
+            y_temp-=velocidad
+            x_temp-=velocidad2
+        elif orientación2 == "abajo":
+            mostrar_bala(x_temp,y_temp,bala_abajo)
+            y_temp+=velocidad
+            x_temp+=velocidad2
+        elif orientación2 == "izquierda":
+            mostrar_bala(x_temp,y_temp,bala_izquierda)
+            x_temp-=velocidad
+            y_temp-=velocidad2
+        elif orientación2 == "derecha":
+            mostrar_bala(x_temp,y_temp,bala_derecha)
+            x_temp+=velocidad
+            y_temp+=velocidad2
+        
+        if (y_temp<=0 or y_temp>= A or x_temp<=0 or x_temp>= L) or contador_rebotes==10:#Cuando se llega a un borde o se rebota 10 veces.
+            contador_rebotes=0 # se reinician los rebotes.
+            bala_status="Espera"
+
+    if bala_status== "Espera":
+        velocidad=5# Es importante reiniciar estos valores cada vez.
+        velocidad2=0
+        mostrar_bala(personaje_rectangulo.x+(personaje_tamaño[0]//4),personaje_rectangulo.y+5,bala)#En espera la bala se queda oculta en la nave.
+
+    #Rebote de las balas
+    bala_dimensiones=bala.get_rect(center=(x_temp,y_temp))#Se hallan las coordenadas que va adquiriendo la bala al moverse.
+    switch=True #variable usada para el rebote.
+    for i in range(0,len(habitacion)):
+        for limite in habitacion[i]:
+            if bala_dimensiones.colliderect(limite[1]) and bala_status=="Fuego" and switch==True:
+                contador_rebotes+=1
+                if contador_rebotes==1:# estos if se usan para que los rebotes sean más dinámicos, invirtiendo las velocidades cada 2 rebotes.
+                    velocidad*=-1
+                    velocidad2= velocidad#Velocidad 2 deja de ser 0.
+                elif contador_rebotes%2==0:
+                    velocidad=velocidad
+                    velocidad2*=-1
+                elif contador_rebotes%2==1:
+                    velocidad*=-1
+                    velocidad2=velocidad2
+                switch=False 
+
+    Villano1_up=(villano01.recta.x-25,villano01.recta.y-500,75,500)
+    Villano1_down=(villano01.recta.x-25,villano01.recta.y+50,75,500)
+    Villano1_right=(villano01.recta.x+50,villano01.recta.y-10,600,75)
+    Villano1_left=(villano01.recta.x-625,villano01.recta.y-10,600,75)
+    
+    #Apuntado enemigo
+    Villano2_up=(villano02.recta.x-25,villano02.recta.y-500,75,500)
+    Villano2_down=(villano02.recta.x-25,villano02.recta.y+50,75,500)
+    Villano2_right=(villano02.recta.x+50,villano02.recta.y-10,600,75)
+    Villano2_left=(villano02.recta.x-625,villano02.recta.y-10,600,75)
+
+    villano01.estado="Espera"
+    
+    if villano01.estado=="Espera":
+        if personaje_rectangulo.colliderect(Villano1_up):
+            villano01.imagen=villano_arriba
+            villano01.estado="Fuego"
+        if personaje_rectangulo.colliderect(Villano1_down):
+            villano01.imagen=villano_abajo
+            villano01.estado="Fuego"
+        if personaje_rectangulo.colliderect(Villano1_left):
+            villano01.imagen=villano_izquierda
+            villano01.estado="Fuego"
+        if personaje_rectangulo.colliderect(Villano1_right):
+            villano01.imagen=villano_derecha
+            villano01.estado="Fuego"
+    
+    
+    villano02.estado="Espera"
+    if villano02.estado=="Espera":
+        if personaje_rectangulo.colliderect(Villano2_up):
+            villano02.imagen=villano_arriba
+            villano02.estado="Fuego"
+        if personaje_rectangulo.colliderect(Villano2_down):
+            villano02.imagen=villano_abajo
+            villano02.estado="Fuego"
+        if personaje_rectangulo.colliderect(Villano2_left):
+            villano02.imagen=villano_izquierda
+            villano02.estado="Fuego"
+        if personaje_rectangulo.colliderect(Villano2_right):
+            villano02.imagen=villano_derecha
+            villano02.estado="Fuego"
+
+    #disparo enemigo
+    if villano01.estado=="Fuego":
+        if villano01.imagen==villano_arriba:
+            villano01.bala_rect.y-=5
+        if villano01.imagen==villano_abajo:
+            villano01.bala_rect.y+=5
+        if villano01.imagen==villano_derecha:
+            villano01.bala_rect.x+=5
+        if villano01.imagen==villano_izquierda:
+            villano01.bala_rect.x-=5
+        ventana.blit(villano01.bala,villano01.bala_rect)
+        if villano01.bala_rect.colliderect(personaje_rectangulo) or villano01.bala_rect.y<0:
+            villano01.bala_rect.y=villano01.recta.y+15
+            villano01.bala_rect.x=villano01.recta.x+15
+    if villano01.estado=="Espera":
+        villano01.bala_rect.y=villano01.recta.y+15
+        villano01.bala_rect.x=villano01.recta.x+15
+        
+        mostrar_bala(villano01.recta.x+15,villano01.recta.y+15,villano01.bala)
+        
+    
+    if villano02.estado=="Fuego":
+        if villano02.imagen==villano_arriba:
+            villano02.bala_rect.y-=5
+        if villano02.imagen==villano_abajo:
+            villano02.bala_rect.y+=5
+        if villano02.imagen==villano_derecha:
+            villano02.bala_rect.x+=5
+        if villano02.imagen==villano_izquierda:
+            villano02.bala_rect.x-=5
+        ventana.blit(villano02.bala,villano02.bala_rect)
+        if villano02.bala_rect.colliderect(personaje_rectangulo) or villano02.bala_rect.y<0:
+            villano02.bala_rect.y=villano02.recta.y+15
+            villano02.bala_rect.x=villano02.recta.x+15
+    if villano02.estado=="Espera":
+        villano02.bala_rect.y=villano02.recta.y+15
+        villano02.bala_rect.x=villano02.recta.x+15
+        mostrar_bala(villano02.recta.x+15,villano02.recta.y+15,villano02.bala)
+
+        
+
+
+    mostrar_nivel()
+    mostrar_puntaje(650,560)
+    
+    
+        
+
+    
+    ventana.blit(villano01.imagen,villano01.recta)
+    ventana.blit(villano02.imagen,villano02.recta)
+    
+    ventana.blit(personaje_imagen,personaje_rectangulo)
+
+    pygame.display.update()
